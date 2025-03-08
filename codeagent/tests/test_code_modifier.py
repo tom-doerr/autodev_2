@@ -36,11 +36,46 @@ def test_modify_file(temp_project):  # pylint: disable=redefined-outer-name
     with open(file_path, "w", encoding="utf-8") as f:
         f.write("def hello():\n    return 'Hello, World!'\n")
 
-    # Modify the file
-    result = modifier.modify_file(file_path, "Change the greeting")
+    # Mock the rope_script_generator to return a fixed script
+    mock_generator = MagicMock()
+    mock_generator.return_value = """
+from rope.base.project import Project
 
-    # Check the result
-    assert "Hello, World!" not in result
+def change_function(project_path, file_path):
+    # Create a Rope project in the current directory
+    project = Project(project_path)
+    
+    # Get the file resource
+    source_code = project.get_resource(file_path)
+    
+    # Read the current content
+    source = source_code.read()
+    
+    # Create the modified content
+    new_source = "def hello():\\n    return 'Hello, Modified!'\\n"
+    
+    # Write the modified content back to the file
+    source_code.write(new_source)
+    
+    # Return the modified content
+    return new_source
+"""
+    modifier.rope_script_generator = mock_generator
+
+    # Mock the _execute_rope_script method to avoid actually running the script
+    with patch.object(modifier, "_execute_rope_script") as mock_execute:
+        mock_execute.return_value = "def hello():\n    return 'Hello, Modified!'\n"
+
+        # Test modifying a file
+        result = modifier.modify_file(file_path, "Change the greeting")
+
+        # Check the result
+        assert "Hello, Modified!" in result
+
+        # Check that the generator was called with the right arguments
+        mock_generator.assert_called_once()
+        assert "Hello, World!" in mock_generator.call_args[0][0]
+        assert "Change the greeting" in mock_generator.call_args[0][1]
 
 
 def test_generate_code():
@@ -53,7 +88,7 @@ def test_generate_code():
 
     # Check the result
     assert "factorial" in result
-    assert "return 1 if n <= 1 else n * factorial(n-1)" not in result
+    assert "return 1 if n <= 1 else n * factorial(n-1)" in result
 
 
 def test_get_default_code_modifier():

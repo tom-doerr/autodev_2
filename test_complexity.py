@@ -1,5 +1,7 @@
 """Test file to demonstrate cyclomatic complexity checking."""
 
+import pytest
+
 def simple_function(value):
     """A simple function with low complexity."""
     return value * 2
@@ -36,3 +38,8 @@ def test_complex_function():
     assert complex_function(35) == 4
     assert complex_function(45) == 5
     assert complex_function(55) == 6
+
+@pytest.mark.xfail(reason="Demonstrates cyclomatic complexity check failing")
+def test_complex_function_complexity():
+    """This test should fail due to cyclomatic complexity."""
+    complex_function(10)

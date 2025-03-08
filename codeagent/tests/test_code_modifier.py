@@ -6,7 +6,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from codeagent.code_modifier import CodeModifier
+from codeagent.code_modifier import CodeModifierAgent
 
 
 @pytest.fixture
@@ -24,7 +24,7 @@ def temp_project():
 def test_code_modifier_init():
     """Test CodeModifier initialization."""
     model_manager = MagicMock()
-    modifier = CodeModifier(model_manager)
+    modifier = CodeModifierAgent(model_manager)
     
     assert modifier.model_manager == model_manager
     assert modifier.project is None
@@ -34,7 +34,7 @@ def test_load_project(temp_project):
     """Test load_project method."""
     temp_dir, _ = temp_project
     
-    modifier = CodeModifier(MagicMock())
+    modifier = CodeModifierAgent(MagicMock())
     modifier.load_project(temp_dir)
     
     assert modifier.project is not None
@@ -50,7 +50,7 @@ def test_modify_file(temp_project):
     model_manager = MagicMock()
     model_manager.get_completion.return_value = "def hello():\n    return 'Hello, Modified!'\n"
     
-    modifier = CodeModifier(model_manager)
+    modifier = CodeModifierAgent(model_manager)
     result = modifier.modify_file(file_path, "Change the return value")
     
     # Check that the file was modified
@@ -65,7 +65,7 @@ def test_modify_file(temp_project):
 
 def test_create_modification_prompt():
     """Test _create_modification_prompt method."""
-    modifier = CodeModifier(MagicMock())
+    modifier = CodeModifierAgent(MagicMock())
     
     code = "def hello():\n    return 'Hello, World!'\n"
     instruction = "Change the return value"

@@ -7,7 +7,8 @@ import tempfile
 # Add the codeagent package to the Python path
 sys.path.append('/home/tom/git/autodev_2/codeagent')
 
-from codeagent.code_modifier import CodeModifierAgent, DSPY_AVAILABLE
+from codeagent.code_modifier import CodeModifierAgent
+from codeagent.model import DSPY_AVAILABLE
 
 def test_code_modifier_agent():
     """Test the CodeModifierAgent."""

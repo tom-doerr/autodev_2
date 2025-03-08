@@ -1,9 +1,15 @@
-"""Module for generating Rope scripts using DSPy."""
+"""DSPy modules for code generation and modification."""
 
 import os
 import re
+from typing import Optional
 
-import dspy  # type: ignore
+try:
+    import dspy  # type: ignore
+
+    DSPY_AVAILABLE = True
+except ImportError:
+    DSPY_AVAILABLE = False
 
 
 # Simple assertion implementation since DSPy assertions are commented out in the installed version
@@ -62,7 +68,7 @@ class RopeScriptGenerator:
         "rope.contrib.findit",
     ]
 
-    def __init__(self, model_name=None):
+    def __init__(self, model_name: Optional[str] = None):
         """Initialize the RopeScriptGenerator.
 
         Args:
@@ -90,45 +96,33 @@ class RopeScriptGenerator:
             # If assertions are not available, return self
             return self
 
-    def __call__(self, file_content, instructions):
-        """Generate a Python script that uses Rope to refactor the given file content.
+    def __call__(self, code: str, instructions: str) -> str:
+        """Generate a Rope script to modify the given code."""
+        if not DSPY_AVAILABLE:
+            raise ImportError("DSPy is required for RopeScriptGenerator")
 
-        Args:
-            file_content: The content of the file to refactor.
-            instructions: Natural language instructions for the refactoring.
+        # Make sure we have a language model
+        assert dspy.settings.lm is not None, "No language model configured"
 
-        Returns:
-            A Python script that uses Rope to refactor the file.
-        """
-        # Check if this is a request to create a new file
-        if not file_content and instructions.startswith("Create a new file with:"):
-            return self._generate_new_file_script(
-                instructions[len("Create a new file with:") :].strip()
-            )
-
-        # Otherwise, generate a refactoring script
-        return self._generate_refactoring_script(file_content, instructions)
-
-    def _generate_refactoring_script(self, file_content, instructions):
-        """Generate a script for refactoring existing code."""
-        # Create a prompt for the model
+        # Generate the Rope script using the LM directly
         prompt = f"""
-You are a Python code refactoring expert. Your task is to write a Python script that uses the Rope library to refactor code.
+You are an expert Python programmer. Your task is to write a Python script that uses the Rope library to modify code according to the given instructions.
 
-Here are the instructions for the refactoring:
+The script should define a function called 'refactor_code' that takes two parameters:
+1. project_path: The path to the project root
+2. file_path: The relative path to the file to modify
+
+The function should use Rope to modify the file according to the instructions and return the modified content.
+
+Here are the instructions for modifying the code:
 {instructions}
 
-Here is the code to refactor:
+Here is the code to modify:
 ```python
-{file_content}
+{code}
 ```
 
-Write a Python script that uses the Rope library to perform this refactoring. The script should:
-1. Define a function named `change_function(project_path, file_path)` that performs the refactoring.
-2. Use the Rope library to perform the refactoring.
-3. Return the modified code as a string.
-
-The script should be self-contained and handle any necessary imports.
+Write a Python script that uses Rope to implement these changes. The script should be self-contained and not rely on any external dependencies other than Rope.
 
 IMPORTANT: Only use the following Rope imports:
 - from rope.base.project import Project
@@ -145,19 +139,19 @@ from rope.base.project import Project
 def change_function(project_path, file_path):
     # Create a Rope project in the current directory
     project = Project(project_path)
-    
+
     # Get the file resource
     source_code = project.get_resource(file_path)
-    
+
     # Read the current content
     source = source_code.read()
-    
+
     # Create the modified content
     new_source = "def modified_function():\\n    return 'Modified!'\\n"
-    
+
     # Write the modified content back to the file
     source_code.write(new_source)
-    
+
     # Return the modified content
     return new_source
 ```
@@ -165,98 +159,29 @@ def change_function(project_path, file_path):
 Only output the Python code, nothing else.
 """
 
-        # Generate the script using DSPy
-        script = dspy.settings.lm(prompt)
+        response = dspy.settings.lm(prompt)
 
-        # Ensure the result is a string
-        if isinstance(script, list):
-            script = "\n".join(script)
-        elif not isinstance(script, str):
-            script = str(script)
-
-        # Clean up the script
-        script = self._clean_script(script)
-
-        # Validate the script
-        self._validate_script(script)
-
+        # Extract the script from the response
+        script = self._extract_script_from_response(response)
         return script
 
-    def _generate_new_file_script(self, instructions):
-        """Generate a script for creating a new file with code."""
-        # Create a prompt for the model
-        prompt = f"""
-You are a Python code generation expert. Your task is to write a Python script that uses the Rope library to create a new file with code.
+    def _extract_script_from_response(self, response):
+        """Extract code from LLM response, handling different response formats."""
+        # Handle list responses
+        if isinstance(response, list):
+            return response[0] if response else ""
 
-Here are the instructions for the code to generate:
-{instructions}
+        # Handle string responses
+        if isinstance(response, str):
+            # Extract code from markdown code blocks if present
+            if "```python" in response and "```" in response.split("```python", 1)[1]:
+                return response.split("```python", 1)[1].split("```", 1)[0].strip()
+            elif "```" in response:
+                return response.split("```", 1)[1].split("```", 1)[0].strip()
+            return response
 
-Write a Python script that uses the Rope library to create this code. The script should:
-1. Define a function named `change_function(project_path, file_path)` that creates the file with the requested code.
-2. Use the Rope library to create or modify the file with the requested code.
-3. Return the generated code as a string.
-
-The script should be self-contained and handle any necessary imports.
-
-IMPORTANT: Only use the following Rope imports:
-- from rope.base.project import Project
-- from rope.base.exceptions import ...
-- from rope.refactor.rename import Rename
-- from rope.refactor.extract import ExtractMethod, ExtractVariable
-- from rope.refactor.inline import Inline
-- from rope.contrib.codeassist import get_definition_location
-
-Example script structure:
-```python
-from rope.base.project import Project
-
-def change_function(project_path, file_path):
-    # Create a Rope project in the current directory
-    project = Project(project_path)
-    
-    # Get or create the file resource
-    source_code = project.get_resource(file_path)
-    
-    # Create the content for the new file
-    new_source = "def new_function():\\n    return 'Hello, World!'\\n"
-    
-    # Write the content to the file
-    source_code.write(new_source)
-    
-    # Return the generated content
-    return new_source
-```
-
-Only output the Python code, nothing else.
-"""
-
-        # Generate the script using DSPy
-        script = dspy.settings.lm(prompt)
-
-        # Ensure the result is a string
-        if isinstance(script, list):
-            script = "\n".join(script)
-        elif not isinstance(script, str):
-            script = str(script)
-
-        # Clean up the script
-        script = self._clean_script(script)
-
-        # Validate the script
-        self._validate_script(script)
-
-        return script
-
-    def _clean_script(self, script):
-        """Clean up the script by removing markdown code blocks and other artifacts."""
-        # Remove markdown code blocks
-        script = re.sub(r"```python\s*", "", script)
-        script = re.sub(r"```\s*", "", script)
-
-        # Remove any leading/trailing whitespace
-        script = script.strip()
-
-        return script
+        # Handle other response types
+        return str(response) if response else ""
 
     def _validate_script(self, script):
         """Validate the generated script using assertions."""

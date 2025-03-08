@@ -16,17 +16,16 @@ class RopeScriptGenerator:
     def __init__(self, model_name: Optional[str] = None):
         """Initialize the Rope script generator."""
         self.model_name = model_name
-        
+        from codeagent.dspy_config import configure_dspy, DSPY_AVAILABLE
         # Set up the language model if DSPy is available
         if DSPY_AVAILABLE:
             if model_name:
-                self.lm = dspy.LM(model_name)
-                dspy.settings.configure(lm=self.lm)
-            elif not dspy.settings.lm:
-                # Use the default model if none is specified
-                model_name = os.environ.get("CODEAGENT_MODEL", "openrouter/google/gemini-2.0-flash-001")
-                self.lm = dspy.LM(model_name)
-                dspy.settings.configure(lm=self.lm)
+                self.lm = configure_dspy(model_name)
+            elif not hasattr(dspy.settings, 'lm') or not dspy.settings.lm:
+                default_model = os.environ.get("CODEAGENT_MODEL", "openrouter/google/gemini-2.0-flash-001")
+                self.lm = configure_dspy(default_model)
+            else:
+                self.lm = dspy.settings.lm
     
     def __call__(self, code: str, instructions: str) -> str:
         """Generate a Rope script to modify the given code."""

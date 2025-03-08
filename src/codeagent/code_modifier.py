@@ -77,7 +77,7 @@ class CodeModifierAgent:
             # Execute the Rope script
             return self._run_script_function(module, project_path, rel_file_path)
         except Exception as e:
-            raise ValueError(f"Error executing Rope script: {e}") from e
+            raise ValueError(f"Error executing Rope script from temporary file {temp_file_path}: {e}") from e
         finally:
             # Clean up the temporary file
             os.unlink(temp_file_path)
@@ -103,20 +103,23 @@ class CodeModifierAgent:
         return module
 
     def _get_relative_path(self, file_path, project_path):
-        """Get the path of a file relative to a project path.
-
+        """Get the relative path of a file with respect to the project path.
+        
+        Uses pathlib for clarity. See [docs.python.org](https://docs.python.org/3/library/pathlib.html) and [docs.python.org](https://docs.python.org/3/library/os.path.html) for more details.
+        
         Args:
             file_path: Path to the file.
             project_path: Path to the project.
-
+        
         Returns:
-            The relative path.
+            The relative path as a string.
         """
-        if os.path.isabs(file_path):
-            # If file_path is absolute, make it relative to project_path
+        from pathlib import Path
+        try:
+            rel_path = Path(file_path).relative_to(Path(project_path))
+            return str(rel_path)
+        except ValueError:
             return os.path.relpath(file_path, project_path)
-        # If file_path is already relative, use it as is
-        return file_path
 
     def _run_script_function(self, module, project_path, file_path):
         """Run the appropriate function from a Rope script module.

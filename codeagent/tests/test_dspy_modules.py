@@ -1,11 +1,10 @@
 """Tests for the DSPy modules in codeagent."""
 
 import os
-import sys
 import pytest
 from unittest.mock import patch, MagicMock
 
-from codeagent.dspy_modules import RopeScriptGenerator, DSPY_AVAILABLE
+from codeagent.dspy_modules import RopeScriptGenerator
 
 
 class TestRopeScriptGenerator:

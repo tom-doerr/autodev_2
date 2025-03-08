@@ -17,7 +17,7 @@ try:
     from dspy.teleprompt import BootstrapFewShot
     from dspy.predict import Predict
     from dspy.primitives.assertions import assert_transform_module
-    from codeagent.dspy_modules.rope_script_generator import RopeScriptGenerator
+    from codeagent.dspy_modules.rope_script_generator import RopeScriptGenerator, Assert
     from codeagent.code_modifier import CodeModifierAgent
     from codeagent.model import ModelManager
     DSPY_AVAILABLE = True
@@ -70,22 +70,34 @@ def calculate_sum(a, b):
 
     # Configure the evaluator
     def evaluate_func(example, pred, trace=None):
-        return example["output"](pred)
+        try:
+            # Create a CodeModifierAgent instance
+            agent = CodeModifierAgent()
+            
+            # Generate the script
+            generator = RopeScriptGenerator()
+            script = generator(example["code"], example["instruction"])
+            
+            # Check if the generated script adds type hints
+            return example["output"](script)
+        except ValueError as e:
+            print(f"ValueError during evaluation: {e}")
+            return False
 
     evaluate = Evaluate(devset=dev_set, metric=evaluate_func, num_threads=1)
 
     # Optimize the module
-    # chain_of_thought = False
-    # new_module = BootstrapFewShot(metric=evaluate_func).compile(
-    #     module, trainset=dev_set, eval_kwargs={'num_threads': 1}
-    # )
+    chain_of_thought = False
+    new_module = BootstrapFewShot(metric=evaluate_func).compile(
+        module, trainset=dev_set, eval_kwargs={'num_threads': 1}
+    )
     
     # Evaluate the optimized module
-    # metric = evaluate.run(new_module, devset=dev_set, num_threads=1)
-    # print(f"Metric: {metric}")
+    metric = evaluate.run(new_module, devset=dev_set, num_threads=1)
+    print(f"Metric: {metric}")
 
     # Assert that the optimized module passes the assertions
-    # assert metric > 0.8
+    assert metric > 0.8
     
     # Create a CodeModifierAgent instance
     agent = CodeModifierAgent()

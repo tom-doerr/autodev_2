@@ -6,7 +6,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from codeagent.code_modifier import CodeModifierAgent, get_default_code_modifier
+from codeagent.code_modifier import CodeModifierAgent
+from codeagent.model import ModelManager
 
 
 @pytest.fixture
@@ -94,12 +95,12 @@ def test_generate_code():
 def test_get_default_code_modifier():
     """Test get_default_code_modifier function."""
     with patch.dict(os.environ, {"CODEAGENT_MODEL": "test-model"}):
-        modifier = get_default_code_modifier()
+        modifier = modifier.get_default_code_modifier()
         assert modifier.model_name == "test-model"
 
     # Test without environment variable
     with patch.dict(os.environ, {}, clear=True):
-        modifier = get_default_code_modifier()
+        modifier = modifier.get_default_code_modifier()
         assert modifier.model_name is None
 
 

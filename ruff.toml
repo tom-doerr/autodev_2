@@ -1,3 +1,4 @@
+[ruff]
 max-complexity = 5
 select = ["E", "F", "W", "C90"]
 max-function-length = 50

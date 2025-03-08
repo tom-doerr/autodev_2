@@ -1,6 +1,5 @@
 import os
 import requests
-import json
 
 def list_openrouter_models():
     api_key = os.environ.get("OPENROUTER_API_KEY")

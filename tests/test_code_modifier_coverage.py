@@ -13,10 +13,7 @@ sys.modules['codeagent.dspy_modules'] = MagicMock()
 sys.modules['codeagent.dspy_modules.rope_script_generator'] = MagicMock()
 sys.modules['codeagent.dspy_modules.rope_script_generator'].RopeScriptGenerator = MagicMock
 
-# pylint: disable=wrong-import-position,unused-import
-# Import the module directly to ensure coverage works
 from src.codeagent.code_modifier import CodeModifierAgent, get_default_code_modifier
-# pylint: enable=wrong-import-position,unused-import
 
 
 @pytest.fixture

@@ -1,7 +1,7 @@
 """DSPy modules for code generation and modification."""
 
 import os
-from typing import Optional, Union, List
+from typing import Optional
 
 try:
     import dspy

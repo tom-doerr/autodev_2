@@ -76,5 +76,5 @@ if __name__ == "__main__":
     print(f"\nProject generated in {output_dir}/")
     print("To run the project:")
     print(f"1. cd {output_dir}")
-    print(f"2. pip install -r requirements.txt")
-    print(f"3. python main.py")
+    print("2. pip install -r requirements.txt")
+    print("3. python main.py")

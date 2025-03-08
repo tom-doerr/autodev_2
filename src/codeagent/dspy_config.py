@@ -1,4 +1,3 @@
-import os
 try:
     import dspy  # type: ignore
     DSPY_AVAILABLE = True

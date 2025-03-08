@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from click.testing import CliRunner
 
-from codeagent.cli import cli, modify
+from codeagent.cli import cli
 
 
 @pytest.fixture

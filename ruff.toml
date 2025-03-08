@@ -3,5 +3,5 @@ max-complexity = 5
 select = ["E", "F", "W", "C90"]
 max-function-length = 50
 max-method-length = 30
-max-class-length = 300
-max-module-lines = 500
+max-class-length = 100
+max-module-lines = 200

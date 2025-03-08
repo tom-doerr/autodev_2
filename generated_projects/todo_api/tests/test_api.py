@@ -2,9 +2,7 @@
 
 import unittest
 import json
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from app import app, db, Todo  # Import your Flask app and models
+from app import app, db  # Import your Flask app and models
 
 class APITestCase(unittest.TestCase):
     """Test case for the API endpoints."""

@@ -11,3 +11,16 @@ max-module-lines = 200
 max-arguments = 2
 max-statements = 10
 max-nested-blocks = 2
+
+# Additional complexity constraints
+
+# Control local variable usage (limits the number of local variables per function)
+max-locals = 5
+
+# Enforce simpler class designs by limiting class complexity
+max-public-methods = 5
+max-attributes = 3
+
+# Control branching and return statements in functions
+max-branches = 3
+max-returns = 2

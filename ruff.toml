@@ -1,25 +1,16 @@
 # General lint configuration
+[lint]
 select = ["E", "F", "W", "C90"]
 
 # McCabe complexity settings
 [lint.mccabe]
 max-complexity = 4
-max-method-length = 30
-max-class-length = 100
-max-module-lines = 200
-max-arguments = 2
-max-statements = 10
-max-nested-blocks = 2
 
-# Additional complexity constraints
-
-# Control local variable usage (limits the number of local variables per function)
-max-locals = 5
-
-# Enforce simpler class designs by limiting class complexity
-max-public-methods = 5
-max-attributes = 3
-
-# Control branching and return statements in functions
-max-branches = 3
-max-returns = 2
+# Pylint complexity and design constraints
+[lint.pylint]
+max-statements = 10   # Limits statements per function (approximates method length)
+max-nested-blocks = 2 # Limits nesting depth
+max-locals = 5        # Limits local variables
+max-public-methods = 5 # Limits public methods per class
+max-branches = 3      # Limits branches per function
+max-returns = 2       # Limits return statements per function

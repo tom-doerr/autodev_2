@@ -1,6 +1,4 @@
-[lint.mccabe]
 max-complexity = 4
-
 select = ["E", "F", "W", "C90"]
 max-function-length = 50
 max-method-length = 30

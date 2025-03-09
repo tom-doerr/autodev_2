@@ -54,7 +54,7 @@ def test_model_manager_get_completion():
     
     # Mock the lm property
     mock_lm = MagicMock()
-    mock_lm.complete.return_value.text = "Mocked completion"
+    mock_lm.complete.return_value = MagicMock(text="Mocked completion")
     manager._lm = mock_lm
     
     completion = manager.get_completion("Test prompt")
@@ -63,7 +63,7 @@ def test_model_manager_get_completion():
     assert completion == "Mocked completion"
     
     # Check that complete was called with the correct prompt
-    mock_lm.complete.assert_called_once_with("Test prompt")
+    mock_lm.complete.assert_called_once_with(prompt="Test prompt")
 
 
 def test_get_default_model():

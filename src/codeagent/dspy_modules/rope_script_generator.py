@@ -84,7 +84,7 @@ class RopeScriptGenerator:
             dspy.settings.configure(lm=dspy.LM(model_name))
 
         # Activate assertions for this module
-        self.activate_assertions()
+        # self.activate_assertions() # REMOVE THIS LINE
 
     def activate_assertions(self):
         """Activate assertions for this module."""

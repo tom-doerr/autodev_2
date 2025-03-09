@@ -1,6 +1,7 @@
-[
+# General lint configuration
 select = ["E", "F", "W", "C90"]
 
+# McCabe complexity settings
 [lint.mccabe]
 max-complexity = 4
 max-function-length = 50
